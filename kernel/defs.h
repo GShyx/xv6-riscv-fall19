@@ -154,6 +154,10 @@ void            uartputc(int);
 int             uartgetc(void);
 
 // vm.c
+void            vmprint(pagetable_t);
+void            print_page(pagetable_t pagetable, int idt);
+int             uvm_malloc(pagetable_t pagetable, uint64 addr, uint64 size);
+
 void            kvminit(void);
 void            kvminithart(void);
 uint64          kvmpa(uint64);

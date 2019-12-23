@@ -42,15 +42,31 @@ uint64
 sys_sbrk(void)
 {
   int addr;
-  int n;
+  int n;  
 
   if(argint(0, &n) < 0)
     return -1;
+  // if(n>1000000000){
+  //     myproc()->sz += n;
+  //     return -1;
+  // }
   addr = myproc()->sz;
-  if(growproc(n) < 0)
-    return -1;
+  // printf("--------------%d,%d----------------\n", addr,n);
+  myproc()->sz += n;
+  // if(growproc(n) < 0)
+  //   return -1;
+
+  if(n < 0){
+    myproc()->sz = uvmdealloc(myproc()->pagetable, addr, myproc()->sz);
+  }
+  // printf("------return addr = %d------\n", addr);
+  // printf("-------return myproc() = %d---------\n", myproc()->sz);
+  // if(n>1000000000)
+  //   return -1;
+  
   return addr;
 }
+
 
 uint64
 sys_sleep(void)

@@ -67,7 +67,57 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if(r_scause() == 13 || r_scause() == 15) {
+
+    char *mem;
+    uint64 a;
+    // uint64 newsz;
+    // uint64 oldsz;
+    // uint64 fault_vaddr;
+
+    pagetable_t pagetable = p->pagetable;
+
+    // vmprint(pagetable);
+    if(r_stval()>=p->sz){
+      // printf("a\n");
+      goto next;
+    }
+
+    a = PGROUNDDOWN(r_stval());
+    // oldsz = a;
+    // newsz = myproc()->sz;
+    // printf("----------------return myproc() = %d------------------\n", myproc()->sz);
+    // if(fault_vaddr >= p->sz) {
+    //   p->killed = 1;
+    //   goto next;
+    // }
+
+    if(a < p->tf->sp) {
+      // printf("usertrap(): page fault: segfault on vaddr %p below stack %p\n", fault_vaddr, p->ustack);
+      // p->killed = 1;
+      // printf("b\n");
+      goto next;
+    }  
+    // for(; a < newsz; a += PGSIZE){
+      
+    mem = kalloc();
+    if (mem != 0){
+    memset(mem, 0, PGSIZE);
+      if(mappages(pagetable, a, PGSIZE, (uint64)mem, PTE_W|PTE_X|PTE_R|PTE_U) != 0){
+        kfree(mem);
+        // printf("c\n");
+        // uvmdealloc(pagetable, a, oldsz);
+        // p->killed = 1;
+        goto next;
+      }
+    }
+    else{
+      // printf("d\n");
+      goto next;
+    } 
+
   } else {
+next:
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
     p->killed = 1;
