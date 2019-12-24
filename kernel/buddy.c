@@ -35,6 +35,14 @@ static Sz_info *bd_sizes;
 static void *bd_base;   // start address of memory managed by the buddy allocator
 static struct spinlock lock;
 
+// Flip 1 bit at position index in array 
+int bit_flip(char *array, int index) {
+  
+  char b = array[index/8];
+  char m = (1 << (index % 8));
+  return (b & m) == m;
+}
+
 // Return 1 if bit at position index in array is set to 1
 int bit_isset(char *array, int index) {
   char b = array[index/8];
@@ -323,6 +331,7 @@ bd_init(void *base, void *end) {
     p += sz;
   }
 
+  // 最小的块不会被分
   // allocate the split array for each size k, except for k = 0, since
   // we will not split blocks of size k = 0, the smallest size.
   for (int k = 1; k < nsizes; k++) {
